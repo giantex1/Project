@@ -1,0 +1,91 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1504\cocoasubrtf830
+{\fonttbl\f0\fnil\fcharset0 Menlo-Bold;\f1\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red170\green13\blue145;\red196\green26\blue22;
+\red63\green110\blue116;\red38\green71\blue75;\red0\green116\blue0;\red28\green0\blue207;\red46\green13\blue110;
+\red92\green38\blue153;}
+{\*\expandedcolortbl;;\csgenericrgb\c0\c0\c0;\csgenericrgb\c66500\c5200\c56900;\csgenericrgb\c77000\c10200\c8600;
+\csgenericrgb\c24700\c43100\c45600;\csgenericrgb\c14900\c27800\c29400;\csgenericrgb\c0\c45600\c0;\csgenericrgb\c11000\c0\c81000;\csgenericrgb\c18100\c5200\c43100;
+\csgenericrgb\c35900\c14900\c60100;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww13060\viewh15800\viewkind0
+\deftab543
+\pard\tx543\pardeftab543\pardirnatural\partightenfactor0
+
+\f0\b\fs22 \cf2 \CocoaLigature0 24.195 (24.199) seconds
+\f1\b0 \cf3 \
+\
+let\cf2  cloneFromUrlMenuItemId = \cf4 "Clone from URL"\cf2 \
+    \cf3 let\cf2  repoTypeLabelGitId = \cf4 "This is a Git repository"\cf2 \
+    \cf3 let\cf2  repoTypeLabelHgId = \cf4 "This is a Mercurial repository"\cf2 \
+    \cf3 let\cf2  cloneButtonId = \cf4 "Clone"\cf2 \
+\
+\
+\
+\cf3 func\cf2  testClone()\
+    \{\
+        \cf3 let\cf2  repobrowserWindow = \cf5 app\cf2 .\cf5 windows\cf2 .\cf6 matching\cf2 (identifier: \cf5 constants\cf2 .\cf5 repobrowserWindowId\cf2 )\
+        \cf7 //Validate that main app window visible\
+\cf2         \cf6 XCTAssertEqual\cf2 (repobrowserWindow.\cf5 count\cf2 , \cf8 1\cf2 )\
+        \
+        \cf3 let\cf2  newButton = repobrowserWindow.\cf5 menuButtons\cf6 [\cf5 constants\cf2 .\cf5 newToolbarButtonId\cf6 ]\cf2 \
+        \cf7 //Verify that New button exists and Enabled\
+\cf2         \cf6 XCTAssertTrue\cf2 (newButton.\cf5 isEnabled\cf2 )\
+        newButton.\cf6 click\cf2 ()\
+        \
+        repobrowserWindow.\cf5 menuItems\cf6 [\cf5 constants\cf2 .\cf5 cloneFromUrlMenuItemId\cf6 ]\cf2 .\cf6 click\cf2 ()\
+        \
+        \cf3 let\cf2  cloneQuery = repobrowserWindow.\cf5 sheets\cf2 \
+        \
+        \cf7 //Validate text labels on Clone pop-up window\
+\cf2         \cf6 XCTAssert\cf2 (cloneQuery.\cf5 staticTexts\cf6 [\cf4 "Clone a repository"\cf6 ]\cf2 .\cf5 exists\cf2 )\
+        \cf6 XCTAssert\cf2 (cloneQuery.\cf5 staticTexts\cf6 [\cf4 "This is not a valid source path / URL"\cf6 ]\cf2 .\cf5 exists\cf2 )\
+        \
+        \cf7 //Set URL for cloning\
+\cf2         \cf3 let\cf2  editUrlField = cloneQuery.\cf6 children\cf2 (matching: .\cf6 textField\cf2 ).\cf6 element\cf2 (boundBy: \cf8 0\cf2 )\
+        \cf6 XCTAssert\cf2 (editUrlField.\cf5 exists\cf2 )\
+        editUrlField.\cf6 click\cf2 ()\
+        editUrlField.\cf6 typeText\cf2 (\cf5 Constants\cf2 .\cf5 bbcPublicGitUrlHttps\cf2 )\
+        \
+        \cf7 //Set path folder\
+\cf2         \cf3 let\cf2  editPathField = cloneQuery.\cf6 children\cf2 (matching: .\cf6 textField\cf2 ).\cf6 element\cf2 (boundBy: \cf8 1\cf2 )\
+        \cf6 XCTAssert\cf2 (editPathField.\cf5 exists\cf2 )\
+        editPathField.\cf6 click\cf2 ()\
+        editPathField.\cf6 typeKey\cf2 (\cf5 XCUIKeyboardKeyDownArrow\cf2  , modifierFlags:[])\
+        editPathField.\cf6 typeKey\cf2 (\cf5 XCUIKeyboardKeyDelete\cf2 , modifierFlags: .\cf5 command\cf2 )\
+        \
+        \cf3 let\cf2  testFolder = \cf6 getDocumentsDirectory\cf2 ()\cf9 +\cf4 "/Test1"\cf2 \
+        editPathField.\cf6 typeText\cf2 (testFolder)\
+        \
+        \cf7 //Wait for repository type label refreshed\
+\cf2         \cf3 let\cf2  exists = \cf10 NSPredicate\cf2 (format: \cf4 "exists == 1"\cf2 )\
+        \cf6 expectation\cf2 (for: exists, evaluatedWith: \cf5 repoTypeGit\cf2 , handler: \cf3 nil\cf2 )\
+        \cf6 waitForExpectations\cf2 (timeout: \cf8 5\cf2 , handler: \cf3 nil\cf2 )\
+        \
+        \cf7 //Verify that displayed correct label for repository type\
+\cf2         \cf6 XCTAssert\cf2 (\cf5 repoTypeGit\cf2 .\cf5 exists\cf2 )\
+        \
+        \cf7 //Perform clone repository action\
+\cf2         \cf9 print\cf2 (\cf4 "Cloning test repository"\cf2 )\
+        cloneQuery.\cf5 buttons\cf6 [\cf5 constants\cf2 .\cf5 cloneButtonId\cf6 ]\cf2 .\cf6 click\cf2 ()\
+        \
+        \cf7 //Wait while repository cloning\
+\cf2         \cf3 let\cf2  repoFolder = \cf5 app\cf2 .\cf5 windows\cf6 [\cf4 "repo:"\cf9 +\cf2 testFolder\cf6 ]\cf2 \
+        \cf6 expectation\cf2 (for: exists, evaluatedWith: repoFolder, handler: \cf3 nil\cf2 )\
+        \cf6 waitForExpectations\cf2 (timeout: \cf8 10\cf2 , handler: \cf3 nil\cf2 )\
+        \
+        \cf6 XCTAssert\cf2 (repoFolder.\cf5 staticTexts\cf6 [\cf4 "Test1 (Git)"\cf6 ]\cf2 .\cf5 exists\cf2 )\
+        repoFolder.\cf5 staticTexts\cf6 [\cf4 "History"\cf6 ]\cf2 .\cf6 click\cf2 ()\
+        repoFolder.\cf5 tables\cf2 .\cf6 containing\cf2 (.\cf6 tableColumn\cf2 , identifier:\cf4 "graph"\cf2 ).\cf6 children\cf2 (matching: .\cf6 tableRow\cf2 ).\cf6 element\cf2 (boundBy: \cf8 0\cf2 ).\cf5 staticTexts\cf6 [\cf4 "Visual Graph"\cf6 ]\cf2 .\cf6 click\cf2 ()\
+        \
+        \cf7 //Verifying that cloned repository folder created\
+\cf2         \cf6 XCTAssert\cf2 (\cf10 FileManager\cf2 .\cf10 default\cf2 .\cf9 fileExists\cf2 (atPath: testFolder))\
+        \
+        repoFolder.\cf5 buttons\cf6 [\cf5 XCUIIdentifierCloseWindow\cf6 ]\cf2 .\cf6 click\cf2 ()\
+        \
+        \cf7 //Deleting cloned repository folder\
+\cf2         \cf6 deleteFolder\cf2 (path: testFolder)\
+        \
+        repobrowserWindow.\cf5 outlines\cf2 .\cf5 staticTexts\cf6 [\cf4 "Test1"\cf6 ]\cf2 .\cf6 click\cf2 ()\
+        repobrowserWindow.\cf5 outlines\cf2 .\cf6 containing\cf2 (.\cf6 tableColumn\cf2 , identifier:\cf4 "AutomaticTableColumnIdentifier.0"\cf2 ).\cf5 element\cf2 .\cf6 typeKey\cf2 (\cf5 XCUIKeyboardKeyDelete\cf2 , modifierFlags:[])\
+        \cf5 app\cf2 .\cf5 dialogs\cf6 [\cf4 "alert"\cf6 ]\cf2 .\cf6 typeText\cf2 (\cf4 "\\r"\cf2 )\
+        \
+    \}}
